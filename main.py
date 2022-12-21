@@ -16,8 +16,12 @@ def main():
         main()
     
     LOG_PATH = PATH_REPLICA + "log.txt"
-    logCreation(LOG_PATH)
-    
+    try:
+        logCreation(LOG_PATH)
+    except:
+        informationForLog("Log file was already created. You tried to create a copy")
+        print("Log file was already created")
+        
     #Checking if the files exist or not
     if os.path.isfile(os.path.realpath(PATH_SOURCE)):
         # Checking if the target folder exists
