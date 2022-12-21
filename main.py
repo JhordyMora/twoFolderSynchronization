@@ -2,6 +2,7 @@ import os
 import hashlib
 import time
 #Name descompositino path source -> function
+# mirar si el targe folder teine \ PATH_REPLICA
 
 def main():
     # input necesary for the program
@@ -13,7 +14,10 @@ def main():
         print("Pleased, check if your type an integer/ number")
         print("Type all the information again")
         main()
-        
+    
+    LOG_PATH = PATH_REPLICA + "log.txt"
+    logCreation(LOG_PATH)
+    
     #Checking if the files exist or not
     if os.path.isfile(os.path.realpath(PATH_SOURCE)):
         # Checking if the target folder exists
@@ -22,9 +26,10 @@ def main():
             NAME_FILE = PATH_SOURCE.split("/")
             PATH_BACK_UP_FILE = PATH_REPLICA +"backUp_"+ NAME_FILE[-1]
             if os.path.isfile(os.path.realpath(PATH_BACK_UP_FILE)):
-                print("to -do ")
+                equal_data = compare2file(PATH_SOURCE, PATH_BACK_UP_FILE)
+                print(equal_data)
             else:
-                creationBackUpFileAndLog(PATH_BACK_UP_FILE, PATH_REPLICA)
+                creationBackUpFile(PATH_BACK_UP_FILE, LOG_PATH)
         else:
             creationReplicaFolder(PATH_REPLICA)
     else:
@@ -58,20 +63,33 @@ def creationReplicaFolder(PATH_REPLICA):
         print("Are you sure did you write a file path? Please try again")
         main()
 
-def creationBackUpFileAndLog(PATH_BACK_UP_FILE, PATH_REPLICA):
+def creationBackUpFile(PATH_BACK_UP_FILE, LOG_PATH):
     backup_file = open(PATH_BACK_UP_FILE, "x")
     backup_file.close()
+    informationForLog("The backup file was created", LOG_PATH)
     print("The backup file was created")
-    LOG_PATH = PATH_REPLICA + "log.txt"
-    print(LOG_PATH)
-    with open(LOG_PATH, "w") as log:
+    
+def logCreation(LOG_PATH):
+    log = open(LOG_PATH, "x")
+    informationForLog("Log File was created", LOG_PATH)
+    log.close()
+    print("Log File was created")
+    
+def informationForLog(message, LOG_PATH):
+    with open(LOG_PATH, "a") as log:
         now = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
-        log.write(f"Log File was created on {now}")
+        log.write(f"{message} on {now}")
         log.write("\n")
-        log.write("Hola!")
-    print("The log file was created")
+    print(f"{message} on {now}")
 
-
+def compare2file(file1, file2):
+    # compare 2 files with hash
+    with open(file1, 'rb') as f1:
+        with open(file2, 'rb') as f2:
+            if hashlib.md5(f1.read()).hexdigest() == hashlib.md5(f2.read()).hexdigest():
+                return True
+            else:
+                return False
 
 if __name__ == "__main__":
     main()
