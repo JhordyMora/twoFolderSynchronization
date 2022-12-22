@@ -1,5 +1,6 @@
 import os
 import hashlib
+import shutil
 import time
 #Name descompositino path source -> function
 # mirar si el targe folder teine \ PATH_REPLICA
@@ -7,7 +8,32 @@ import time
 def main():
     # input necesary for the program
     PATH_SOURCE = input("Provide the complete path of your source file: ")
-    PATH_REPLICA = input("Provide the complete path where do you want to save replica file: ")
+    if (not os.path.isdir(os.path.realpath(PATH_SOURCE))) or PATH_SOURCE=="" :
+        print("Please, check that the path is a folder path or that the folder exists. Try again")
+        main()
+    first_number_files_source = len(os.listdir(PATH_SOURCE))
+    # print(first_number_files_source)
+        
+    PATH_REPLICA = input("Provide the path of another folder where do you want to save replica file: ")
+    if (PATH_REPLICA==PATH_SOURCE) or PATH_REPLICA=="":
+        print("Please, chosse a different folder for the replica. Try again")
+        main()
+    
+    try:
+        PARENT_DIR = "/".join(PATH_REPLICA.split("/")[0:-1])
+        LOG_PATH = PARENT_DIR + "/log.txt"
+        logCreation(LOG_PATH)
+    except:
+        print("Log File already exists.")
+        informationForLog("Log file was tried to create once again",LOG_PATH)
+        
+    first_number_files_replica = 0
+    if os.path.isdir(os.path.realpath(PATH_REPLICA))==False:
+        creationReplicaFolder(PATH_REPLICA, LOG_PATH)
+    else:
+        first_number_files_replica = len(os.listdir(PATH_REPLICA))
+    # print(first_number_files_replica)
+        
     
     try:
         SYNCHRO_TIME = int(input("Provide how regularly do you want to synchronize your replica file in minutes: "))
@@ -15,61 +41,27 @@ def main():
         print("Pleased, check if your type an integer/ number")
         print("Type all the information again")
         main()
-        
-    PARENT_DIR = "/".join(PATH_REPLICA.split("/")[0:-1])
-    
-    LOG_PATH = PARENT_DIR + "/log.txt"
-    #Checking if the source folder exist
-    if os.path.isdir(os.path.realpath(PATH_SOURCE)):
-        # Checking if the target folder exists
-        if os.path.isdir(os.path.realpath(PATH_REPLICA)):
-            print("todo")
-            # # Checking if a back up file exists
-            # NAME_FILE = PATH_SOURCE.split("/")
-            # PATH_BACK_UP_FILE = PATH_REPLICA +"backUp_"+ NAME_FILE[-1]
-            # if os.path.isfile(os.path.realpath(PATH_BACK_UP_FILE)):
-            #     equal_data = compare2file(PATH_SOURCE, PATH_BACK_UP_FILE)
-            #     print(equal_data)
-            # else:
-            #     creationBackUpFile(PATH_BACK_UP_FILE, LOG_PATH)
-        else:
-            creationReplicaFolder(PATH_REPLICA, LOG_PATH)
-            # Creation of log file
-            LOG_PATH = PATH_REPLICA + "/log.txt"
-            try:
-                logCreation(LOG_PATH)
-            except:
-                informationForLog("Log file was already created. You tried to create a copy",LOG_PATH)
-                print("Log file was already created")
-    else:
-        creationSourceFolder(PATH_SOURCE, LOG_PATH)
-        creationReplicaFolder(PATH_REPLICA, LOG_PATH)
-        # Creation of log file
-        try:
-            logCreation(LOG_PATH)
-        except:
-            informationForLog("Log file was created",LOG_PATH)
-            print("Log file was created")
-    
-def creationSourceFolder(PATH_SOURCE, LOG_PATH):
-    try:
-        answer = input("The Source Folder does not exist. Do you want to create it? [y] for Yes, or [n] for No ")
-        if answer == "y":
-            NAME_FILE = PATH_SOURCE.split("/")
-            directory = NAME_FILE[-1]
-            PARENT_DIR = NAME_FILE[0:-1]
-            parent_dir = "/".join(PARENT_DIR)
-            os.chdir(parent_dir)
-            os.mkdir(directory)
-            informationForLog(f"The folder {directory} was created", LOG_PATH)
-            print(f"The folder {directory} was created")
-        else:
-            print("Sorry we can not continue with the synchronization. Please try again")
-            main()
-    except:
-        print("Are you sure did you write a file path? Please try again")
-        main()
-            
+
+    if first_number_files_replica == 0:
+        for file_source in os.listdir(PATH_SOURCE):
+            creatingCopyInReplica(PATH_SOURCE,file_source ,PATH_REPLICA, LOG_PATH)
+    else:       
+        for file_source in os.listdir(PATH_SOURCE):
+            print(f"file_source: {file_source}")
+            for file_replica in os.listdir(PATH_REPLICA):
+                print(f"file_replica: {file_replica}")
+                if file_source in file_replica:
+                    src_path = PATH_SOURCE + "/" + file_source
+                    dst_path = PATH_REPLICA + "/Back_up_" + file_source
+                    areSameFiles = comparingFiles(src_path, dst_path)
+                    print(f"areSameFiles: {areSameFiles}")
+                    if not areSameFiles:
+                        print("do function which copy the original file to the replica folder")
+                else:
+                    # creatingCopyInReplica()
+                    print("create function which creates a copy of a file")
+                
+
 def creationReplicaFolder(PATH_REPLICA, LOG_PATH):
     try:
         answer = input("The Back Up Folder does not exist. Do you want to create it? [y] for Yes, or [n] for No ")
@@ -84,16 +76,19 @@ def creationReplicaFolder(PATH_REPLICA, LOG_PATH):
             informationForLog(f"The folder {directory} was created", LOG_PATH)
             print("The back up folder was created")
         else:
-            print("Sorry we can not continue with the synchronization")
+            print("Sorry we can not continue with the synchronization. Try again")
+            deletingLogFile(LOG_PATH)
+            main()
     except:
         print("Are you sure did you write a file path? Please try again")
         main()
-
-def creationBackUpFile(PATH_BACK_UP_FILE, LOG_PATH):
-    backup_file = open(PATH_BACK_UP_FILE, "x")
-    backup_file.close()
-    informationForLog("The backup file was created", LOG_PATH)
-    print("The backup file was created")
+    
+def creatingCopyInReplica(PATH_SOURCE,file_source ,PATH_REPLICA, LOG_PATH):
+    src_path = PATH_SOURCE + "/" + file_source
+    dst_path = PATH_REPLICA + "/Back_up_" + file_source
+    shutil.copy(src_path, dst_path)
+    informationForLog(f"Back up File of {file_source} was created on {PATH_REPLICA}", LOG_PATH)
+    print(f"Back up File of {file_source} was created on {PATH_REPLICA}")
     
 def logCreation(LOG_PATH):
     log = open(LOG_PATH, "x")
@@ -108,7 +103,7 @@ def informationForLog(message, LOG_PATH):
         log.write("\n")
     print(f"{message} on {now}")
 
-def compare2file(file1, file2):
+def comparingFiles(file1, file2):
     # compare 2 files with hash
     with open(file1, 'rb') as f1:
         with open(file2, 'rb') as f2:
@@ -117,5 +112,8 @@ def compare2file(file1, file2):
             else:
                 return False
 
+def deletingLogFile(LOG_PATH):
+    os.remove(LOG_PATH)
+    
 if __name__ == "__main__":
     main()
