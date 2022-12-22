@@ -48,19 +48,20 @@ def main():
     else:       
         for file_source in os.listdir(PATH_SOURCE):
             print(f"file_source: {file_source}")
-            for file_replica in os.listdir(PATH_REPLICA):
-                print(f"file_replica: {file_replica}")
-                if file_source in file_replica:
-                    src_path = PATH_SOURCE + "/" + file_source
-                    dst_path = PATH_REPLICA + "/Back_up_" + file_source
-                    areSameFiles = comparingFiles(src_path, dst_path)
-                    print(f"areSameFiles: {areSameFiles}")
-                    if not areSameFiles:
-                        print("do function which copy the original file to the replica folder")
-                else:
-                    # creatingCopyInReplica()
-                    print("create function which creates a copy of a file")
-                
+            # for file_replica in os.listdir(PATH_REPLICA):
+            #     print(f"file_replica: {file_replica}")
+            if file_source in os.listdir(PATH_REPLICA):
+                src_path = PATH_SOURCE + "/" + file_source
+                dst_path = PATH_REPLICA + "/Back_up_" + file_source
+                areSameFiles = comparingFiles(src_path, dst_path)
+                print(f"areSameFiles: {areSameFiles}")
+                if not areSameFiles:
+                    # print("do function which copy the original file to the replica folder")
+                    creatingUpdatedCopyInReplica(PATH_SOURCE,file_source ,PATH_REPLICA, LOG_PATH)
+            else:
+                # creatingCopyInReplica()
+                print("create function which creates a copy of a file")
+                creatingCopyInReplica(PATH_SOURCE,file_source ,PATH_REPLICA, LOG_PATH)
 
 def creationReplicaFolder(PATH_REPLICA, LOG_PATH):
     try:
@@ -89,6 +90,13 @@ def creatingCopyInReplica(PATH_SOURCE,file_source ,PATH_REPLICA, LOG_PATH):
     shutil.copy(src_path, dst_path)
     informationForLog(f"Back up File of {file_source} was created on {PATH_REPLICA}", LOG_PATH)
     print(f"Back up File of {file_source} was created on {PATH_REPLICA}")
+
+def creatingUpdatedCopyInReplica(PATH_SOURCE,file_source ,PATH_REPLICA, LOG_PATH):
+    src_path = PATH_SOURCE + "/" + file_source
+    dst_path = PATH_REPLICA + "/Back_up_" + file_source
+    shutil.copy(src_path, dst_path)
+    informationForLog(f"Back up File of {file_source} was updated on {PATH_REPLICA}", LOG_PATH)
+    print(f"Back up File of {file_source} was updated on {PATH_REPLICA}")
     
 def logCreation(LOG_PATH):
     log = open(LOG_PATH, "x")
