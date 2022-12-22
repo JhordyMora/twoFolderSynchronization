@@ -12,7 +12,6 @@ def main():
         print("Please, check that the path is a folder path or that the folder exists. Try again")
         main()
     first_number_files_source = len(os.listdir(PATH_SOURCE))
-    # print(first_number_files_source)
         
     PATH_REPLICA = input("Provide the path of another folder where do you want to save replica file: ")
     if (PATH_REPLICA==PATH_SOURCE) or PATH_REPLICA=="":
@@ -31,9 +30,7 @@ def main():
     if os.path.isdir(os.path.realpath(PATH_REPLICA))==False:
         creationReplicaFolder(PATH_REPLICA, LOG_PATH)
     else:
-        first_number_files_replica = len(os.listdir(PATH_REPLICA))
-    # print(first_number_files_replica)
-        
+        first_number_files_replica = len(os.listdir(PATH_REPLICA))        
     
     try:
         SYNCHRO_TIME = int(input("Provide how regularly do you want to synchronize your replica file in minutes: "))
@@ -47,36 +44,22 @@ def main():
             creatingCopyInReplica(PATH_SOURCE,file_source ,PATH_REPLICA, LOG_PATH)
     else:       
         for file_source in os.listdir(PATH_SOURCE):
-            # print(f"file_source: {file_source}")
-            # print(f"list files replica folder: {os.listdir(PATH_REPLICA)}")
             name_in_replica= f"Back_up_{file_source}"
-            # print(f"is in folder?: {name_in_replica in os.listdir(PATH_REPLICA)}")
-            # for file_replica in os.listdir(PATH_REPLICA):
-            #     print(f"file_replica: {file_replica}")
             if name_in_replica in os.listdir(PATH_REPLICA):
                 src_path = PATH_SOURCE + "/" + file_source
                 dst_path = PATH_REPLICA + "/Back_up_" + file_source
                 areSameFiles = comparingFiles(src_path, dst_path)
-                # print(f"areSameFiles: {areSameFiles}")
                 if not areSameFiles:
-                    # print("do function which copy the original file to the replica folder")
                     creatingUpdatedCopyInReplica(PATH_SOURCE,file_source ,PATH_REPLICA, LOG_PATH)
             else:
-                # creatingCopyInReplica()
-                # print("create function which creates a copy of a file")
                 creatingCopyInReplica(PATH_SOURCE,file_source ,PATH_REPLICA, LOG_PATH)
                 
     first_number_files_replica = len(os.listdir(PATH_REPLICA))
     first_number_files_source = len(os.listdir(PATH_SOURCE))
-    
-    
                 
     if first_number_files_replica > first_number_files_source:
         file_list_source = os.listdir(PATH_SOURCE)
         file_list_replica = [file.replace("Back_up_","") for file in os.listdir(PATH_REPLICA)]
-        # print(f"list file_source: {file_list_source}")  
-        # print(f"list files replica folder: {file_list_replica}")
-        # print("do function that deletes files von backup")
         extra_files=["Back_up_"+file for file in file_list_replica if file not in file_list_source]
         for file in extra_files:
             extra_files_path = PATH_REPLICA + "/" + file
