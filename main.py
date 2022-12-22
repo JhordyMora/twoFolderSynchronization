@@ -2,8 +2,6 @@ import os
 import hashlib
 import shutil
 import time
-#Name descompositino path source -> function
-# mirar si el targe folder teine \ PATH_REPLICA
 
 def main():
     # input necesary for the program
