@@ -65,6 +65,25 @@ def main():
                 # creatingCopyInReplica()
                 # print("create function which creates a copy of a file")
                 creatingCopyInReplica(PATH_SOURCE,file_source ,PATH_REPLICA, LOG_PATH)
+                
+    first_number_files_replica = len(os.listdir(PATH_REPLICA))
+    first_number_files_source = len(os.listdir(PATH_SOURCE))
+    
+    
+                
+    if first_number_files_replica > first_number_files_source:
+        file_list_source = os.listdir(PATH_SOURCE)
+        file_list_replica = [file.replace("Back_up_","") for file in os.listdir(PATH_REPLICA)]
+        # print(f"list file_source: {file_list_source}")  
+        # print(f"list files replica folder: {file_list_replica}")
+        # print("do function that deletes files von backup")
+        extra_files=["Back_up_"+file for file in file_list_replica if file not in file_list_source]
+        for file in extra_files:
+            extra_files_path = PATH_REPLICA + "/" + file
+            os.remove(extra_files_path)
+            informationForLog(f"File {file} not found in source folder. File {file} was deleted", LOG_PATH)
+            print("File {file} not found in source folder. File {file} was deleted")
+        
 
 def creationReplicaFolder(PATH_REPLICA, LOG_PATH):
     try:
