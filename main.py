@@ -32,39 +32,50 @@ def main():
     
     try:
         SYNCHRO_TIME = int(input("Provide how regularly do you want to synchronize your replica file in minutes: "))
+        SYNCHRO_TIME_SEC = SYNCHRO_TIME*60
     except:
         print("Pleased, check if your type an integer/ number")
         print("Type all the information again")
         main()
 
-    if first_number_files_replica == 0:
-        for file_source in os.listdir(PATH_SOURCE):
-            creatingCopyInReplica(PATH_SOURCE,file_source ,PATH_REPLICA, LOG_PATH)
-    else:       
-        for file_source in os.listdir(PATH_SOURCE):
-            name_in_replica= f"Back_up_{file_source}"
-            if name_in_replica in os.listdir(PATH_REPLICA):
-                src_path = PATH_SOURCE + "/" + file_source
-                dst_path = PATH_REPLICA + "/Back_up_" + file_source
-                areSameFiles = comparingFiles(src_path, dst_path)
-                if not areSameFiles:
-                    creatingUpdatedCopyInReplica(PATH_SOURCE,file_source ,PATH_REPLICA, LOG_PATH)
-            else:
-                creatingCopyInReplica(PATH_SOURCE,file_source ,PATH_REPLICA, LOG_PATH)
-                
-    first_number_files_replica = len(os.listdir(PATH_REPLICA))
-    first_number_files_source = len(os.listdir(PATH_SOURCE))
-                
-    if first_number_files_replica > first_number_files_source:
-        file_list_source = os.listdir(PATH_SOURCE)
-        file_list_replica = [file.replace("Back_up_","") for file in os.listdir(PATH_REPLICA)]
-        extra_files=["Back_up_"+file for file in file_list_replica if file not in file_list_source]
-        for file in extra_files:
-            extra_files_path = PATH_REPLICA + "/" + file
-            os.remove(extra_files_path)
-            informationForLog(f"File {file} not found in source folder. File {file} was deleted", LOG_PATH)
-            print("File {file} not found in source folder. File {file} was deleted")
+    informationForLog("Synchronization process has begun",LOG_PATH)
+    isSynchronizing = True
+    while(isSynchronizing):
         
+        if first_number_files_replica == 0:
+            for file_source in os.listdir(PATH_SOURCE):
+                creatingCopyInReplica(PATH_SOURCE,file_source ,PATH_REPLICA, LOG_PATH)
+        else:       
+            for file_source in os.listdir(PATH_SOURCE):
+                name_in_replica= f"Back_up_{file_source}"
+                if name_in_replica in os.listdir(PATH_REPLICA):
+                    src_path = PATH_SOURCE + "/" + file_source
+                    dst_path = PATH_REPLICA + "/Back_up_" + file_source
+                    areSameFiles = comparingFiles(src_path, dst_path)
+                    if not areSameFiles:
+                        creatingUpdatedCopyInReplica(PATH_SOURCE,file_source ,PATH_REPLICA, LOG_PATH)
+                else:
+                    creatingCopyInReplica(PATH_SOURCE,file_source ,PATH_REPLICA, LOG_PATH)
+                    
+        first_number_files_replica = len(os.listdir(PATH_REPLICA))
+        first_number_files_source = len(os.listdir(PATH_SOURCE))
+                    
+        if first_number_files_replica > first_number_files_source:
+            file_list_source = os.listdir(PATH_SOURCE)
+            file_list_replica = [file.replace("Back_up_","") for file in os.listdir(PATH_REPLICA)]
+            extra_files=["Back_up_"+file for file in file_list_replica if file not in file_list_source]
+            for file in extra_files:
+                extra_files_path = PATH_REPLICA + "/" + file
+                os.remove(extra_files_path)
+                informationForLog(f"File {file} not found in source folder. File {file} was deleted", LOG_PATH)
+                print("File {file} not found in source folder. File {file} was deleted")
+                
+        time.sleep(SYNCHRO_TIME_SEC)
+        # stop_synch = input("If you want to stop the synchronization, please type the letter [q]")
+        # if stop_synch == "q":
+        #     informationForLog("The file(s) synchronizatian has been stopped",LOG_PATH)
+        #     isSynchronizing = False
+    
 
 def creationReplicaFolder(PATH_REPLICA, LOG_PATH):
     try:
