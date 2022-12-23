@@ -2,8 +2,18 @@ import os
 import hashlib
 import shutil
 import time
+import platform
+import datetime
 
 def main():
+    
+    # print(platform.system())
+    slashDirection = ""
+    if platform.system() == "Linux" or platform.system() == "Darwin":
+        slashDirection = "/"
+    else:
+        slashDirection = "\\"
+    
     # input necesary for the program
     PATH_SOURCE = input("Provide the complete path of your source file: ")
     if (not os.path.isdir(os.path.realpath(PATH_SOURCE))) or PATH_SOURCE=="" :
@@ -17,8 +27,8 @@ def main():
         main()
     
     try:
-        PARENT_DIR = "/".join(PATH_REPLICA.split("/")[0:-1])
-        LOG_PATH = PARENT_DIR + "/log.txt"
+        PARENT_DIR = slashDirection.join(PATH_REPLICA.split(slashDirection)[0:-1])
+        LOG_PATH = PARENT_DIR + slashDirection +"log.txt"
         logCreation(LOG_PATH)
     except:
         print("Log File already exists.")
@@ -26,7 +36,7 @@ def main():
         
     first_number_files_replica = 0
     if os.path.isdir(os.path.realpath(PATH_REPLICA))==False:
-        creationReplicaFolder(PATH_REPLICA, LOG_PATH)
+        creationReplicaFolder(PATH_REPLICA, LOG_PATH, slashDirection)
     else:
         first_number_files_replica = len(os.listdir(PATH_REPLICA))        
     
@@ -39,53 +49,65 @@ def main():
         main()
 
     informationForLog("Synchronization process has begun",LOG_PATH)
-    isSynchronizing = True
-    while(isSynchronizing):
-        
-        if first_number_files_replica == 0:
-            for file_source in os.listdir(PATH_SOURCE):
-                creatingCopyInReplica(PATH_SOURCE,file_source ,PATH_REPLICA, LOG_PATH)
-        else:       
-            for file_source in os.listdir(PATH_SOURCE):
-                name_in_replica= f"Back_up_{file_source}"
-                if name_in_replica in os.listdir(PATH_REPLICA):
-                    src_path = PATH_SOURCE + "/" + file_source
-                    dst_path = PATH_REPLICA + "/Back_up_" + file_source
-                    areSameFiles = comparingFiles(src_path, dst_path)
-                    if not areSameFiles:
-                        creatingUpdatedCopyInReplica(PATH_SOURCE,file_source ,PATH_REPLICA, LOG_PATH)
-                else:
-                    creatingCopyInReplica(PATH_SOURCE,file_source ,PATH_REPLICA, LOG_PATH)
+    print("If you want to stop the synchronization at any moment press the key combination [ctrl + c]")
+    # isSynchronizing = True
+    try:
+        while(True):
+            # print("loop")
+            # k = cv2.waitKey(1) & 0xFF
+            # if k == ord('q'):
+            #     informationForLog("The file(s) synchronization has been stopped",LOG_PATH)
+            #     print("The file(s) synchronization has been stopped")
+            #     isSynchronizing = False
+            #     break
+            
+            if first_number_files_replica == 0:
+                for file_source in os.listdir(PATH_SOURCE):
+                    creatingCopyInReplica(PATH_SOURCE,file_source ,PATH_REPLICA, LOG_PATH, slashDirection)
+            else:       
+                for file_source in os.listdir(PATH_SOURCE):
+                    name_in_replica= f"Back_up_{file_source}"
+                    if name_in_replica in os.listdir(PATH_REPLICA):
+                        src_path = PATH_SOURCE + slashDirection + file_source
+                        dst_path = PATH_REPLICA + slashDirection + "Back_up_" + file_source
+                        areSameFiles = comparingFiles(src_path, dst_path)
+                        if not areSameFiles:
+                            creatingUpdatedCopyInReplica(PATH_SOURCE,file_source ,PATH_REPLICA, LOG_PATH, slashDirection)
+                    else:
+                        creatingCopyInReplica(PATH_SOURCE,file_source ,PATH_REPLICA, LOG_PATH, slashDirection)
+                        
+            first_number_files_replica = len(os.listdir(PATH_REPLICA))
+            first_number_files_source = len(os.listdir(PATH_SOURCE))
+                        
+            if first_number_files_replica > first_number_files_source:
+                file_list_source = os.listdir(PATH_SOURCE)
+                file_list_replica = [file.replace("Back_up_","") for file in os.listdir(PATH_REPLICA)]
+                extra_files=["Back_up_"+file for file in file_list_replica if file not in file_list_source]
+                for file in extra_files:
+                    extra_files_path = PATH_REPLICA + slashDirection + file
+                    os.remove(extra_files_path)
+                    informationForLog(f"File {file} not found in source folder. File {file} was deleted", LOG_PATH)
+                    print(f"File {file} not found in source folder. File {file} was deleted")
                     
-        first_number_files_replica = len(os.listdir(PATH_REPLICA))
-        first_number_files_source = len(os.listdir(PATH_SOURCE))
-                    
-        if first_number_files_replica > first_number_files_source:
-            file_list_source = os.listdir(PATH_SOURCE)
-            file_list_replica = [file.replace("Back_up_","") for file in os.listdir(PATH_REPLICA)]
-            extra_files=["Back_up_"+file for file in file_list_replica if file not in file_list_source]
-            for file in extra_files:
-                extra_files_path = PATH_REPLICA + "/" + file
-                os.remove(extra_files_path)
-                informationForLog(f"File {file} not found in source folder. File {file} was deleted", LOG_PATH)
-                print("File {file} not found in source folder. File {file} was deleted")
-                
-        time.sleep(SYNCHRO_TIME_SEC)
-        # stop_synch = input("If you want to stop the synchronization, please type the letter [q]")
-        # if stop_synch == "q":
-        #     informationForLog("The file(s) synchronizatian has been stopped",LOG_PATH)
-        #     isSynchronizing = False
-    
+            time.sleep(SYNCHRO_TIME_SEC)
+            # stop_synch = input("If you want to stop the synchronization, please type the letter [q]")
+            # if stop_synch == "q":
+            #     informationForLog("The file(s) synchronization has been stopped",LOG_PATH)
+            #     isSynchronizing = False
+    except KeyboardInterrupt:
+        informationForLog("\nThe file(s) synchronization has been stopped",LOG_PATH)
+        print("The file(s) synchronization has been stopped \nHave a good day!")
 
-def creationReplicaFolder(PATH_REPLICA, LOG_PATH):
+
+def creationReplicaFolder(PATH_REPLICA, LOG_PATH, slashDirection):
     try:
         answer = input("The Back Up Folder does not exist. Do you want to create it? [y] for Yes, or [n] for No ")
         # print(answer)
         if answer == "y":
-            NAME_FILE = PATH_REPLICA.split("/")
+            NAME_FILE = PATH_REPLICA.split(slashDirection)
             directory = NAME_FILE[-1]
             PARENT_DIR = NAME_FILE[0:-1]
-            parent_dir = "/".join(PARENT_DIR)
+            parent_dir = slashDirection.join(PARENT_DIR)
             os.chdir(parent_dir)
             os.mkdir(directory)
             informationForLog(f"The folder {directory} was created", LOG_PATH)
@@ -98,16 +120,16 @@ def creationReplicaFolder(PATH_REPLICA, LOG_PATH):
         print("Are you sure did you write a file path? Please try again")
         main()
     
-def creatingCopyInReplica(PATH_SOURCE,file_source ,PATH_REPLICA, LOG_PATH):
-    src_path = PATH_SOURCE + "/" + file_source
-    dst_path = PATH_REPLICA + "/Back_up_" + file_source
+def creatingCopyInReplica(PATH_SOURCE,file_source ,PATH_REPLICA, LOG_PATH, slashDirection):
+    src_path = PATH_SOURCE + slashDirection + file_source
+    dst_path = PATH_REPLICA + slashDirection + "Back_up_" + file_source
     shutil.copy(src_path, dst_path)
     informationForLog(f"Back up File of {file_source} was created on {PATH_REPLICA}", LOG_PATH)
     print(f"Back up File of {file_source} was created on {PATH_REPLICA}")
 
-def creatingUpdatedCopyInReplica(PATH_SOURCE,file_source ,PATH_REPLICA, LOG_PATH):
-    src_path = PATH_SOURCE + "/" + file_source
-    dst_path = PATH_REPLICA + "/Back_up_" + file_source
+def creatingUpdatedCopyInReplica(PATH_SOURCE,file_source ,PATH_REPLICA, LOG_PATH, slashDirection):
+    src_path = PATH_SOURCE + slashDirection + file_source
+    dst_path = PATH_REPLICA + slashDirection + "Back_up_" + file_source
     shutil.copy(src_path, dst_path)
     informationForLog(f"Back up File of {file_source} was updated on {PATH_REPLICA}", LOG_PATH)
     print(f"Back up File of {file_source} was updated on {PATH_REPLICA}")
@@ -120,7 +142,7 @@ def logCreation(LOG_PATH):
     
 def informationForLog(message, LOG_PATH):
     with open(LOG_PATH, "a") as log:
-        now = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
+        now = datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M:%S') #time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
         log.write(f"{message} on {now}")
         log.write("\n")
     print(f"{message} on {now}")
