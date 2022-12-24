@@ -88,7 +88,7 @@ def main():
                     os.remove(extra_files_path)
                     original_name = file.replace("Back_up_","")
                     informationForLog(f"File {original_name} was not found in source folder. File {file} was deleted", LOG_PATH)
-                    print(f"File {file} was not found in source folder. File {file} was deleted")
+                    print(f"File {original_name} was not found in source folder. File {file} was deleted")
                     
             time.sleep(SYNCHRO_TIME_SEC)
             # stop_synch = input("If you want to stop the synchronization, please type the letter [q]")
