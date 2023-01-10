@@ -8,11 +8,11 @@ import datetime
 def main():
     
     # print(platform.system())
-    slashDirection = ""
-    if platform.system() == "Linux" or platform.system() == "Darwin":
-        slashDirection = "/"
-    else:
-        slashDirection = "\\"
+    # slashDirection = ""
+    # if platform.system() == "Linux" or platform.system() == "Darwin":
+    #     slashDirection = "/"
+    # else:
+    #     slashDirection = "\\"
     
     # input necesary for the program
     PATH_SOURCE = input("Provide the complete path of your source file: ")
@@ -27,8 +27,8 @@ def main():
         main()
     
     try:
-        PARENT_DIR = slashDirection.join(PATH_REPLICA.split(slashDirection)[0:-1])
-        LOG_PATH = PARENT_DIR + slashDirection +"log.txt"
+        PARENT_DIR = os.path.dirname(PATH_REPLICA)
+        LOG_PATH = os.path.join(PARENT_DIR, "log.txt")
         logCreation(LOG_PATH)
     except:
         print("Log File already exists.")
@@ -36,7 +36,7 @@ def main():
         
     first_number_files_replica = 0
     if os.path.isdir(os.path.realpath(PATH_REPLICA))==False:
-        creationReplicaFolder(PATH_REPLICA, LOG_PATH, slashDirection)
+        creationReplicaFolder(PATH_REPLICA, LOG_PATH)
     else:
         first_number_files_replica = len(os.listdir(PATH_REPLICA))        
     
@@ -63,18 +63,18 @@ def main():
             
             if first_number_files_replica == 0:
                 for file_source in os.listdir(PATH_SOURCE):
-                    creatingCopyInReplica(PATH_SOURCE,file_source ,PATH_REPLICA, LOG_PATH, slashDirection)
+                    creatingCopyInReplica(PATH_SOURCE,file_source ,PATH_REPLICA, LOG_PATH)#, slashDirection)
             else:       
                 for file_source in os.listdir(PATH_SOURCE):
                     name_in_replica= f"Back_up_{file_source}"
                     if name_in_replica in os.listdir(PATH_REPLICA):
-                        src_path = PATH_SOURCE + slashDirection + file_source
-                        dst_path = PATH_REPLICA + slashDirection + "Back_up_" + file_source
+                        src_path = os.path.join(PATH_SOURCE, file_source)
+                        dst_path = os.path.join(PATH_REPLICA, f"Back_up_{file_source}")
                         areSameFiles = comparingFiles(src_path, dst_path)
                         if not areSameFiles:
-                            creatingUpdatedCopyInReplica(PATH_SOURCE,file_source ,PATH_REPLICA, LOG_PATH, slashDirection)
+                            creatingUpdatedCopyInReplica(PATH_SOURCE,file_source ,PATH_REPLICA, LOG_PATH)#, slashDirection)
                     else:
-                        creatingCopyInReplica(PATH_SOURCE,file_source ,PATH_REPLICA, LOG_PATH, slashDirection)
+                        creatingCopyInReplica(PATH_SOURCE,file_source ,PATH_REPLICA, LOG_PATH)#, slashDirection)
                         
             first_number_files_replica = len(os.listdir(PATH_REPLICA))
             first_number_files_source = len(os.listdir(PATH_SOURCE))
@@ -84,7 +84,8 @@ def main():
                 file_list_replica = [file.replace("Back_up_","") for file in os.listdir(PATH_REPLICA)]
                 extra_files=["Back_up_"+file for file in file_list_replica if file not in file_list_source]
                 for file in extra_files:
-                    extra_files_path = PATH_REPLICA + slashDirection + file
+                    extra_files_path = os.path.join(PATH_REPLICA, file)
+                    # extra_files_path = PATH_REPLICA + slashDirection + file
                     os.remove(extra_files_path)
                     original_name = file.replace("Back_up_","")
                     informationForLog(f"File {original_name} was not found in source folder. File {file} was deleted", LOG_PATH)
@@ -100,18 +101,19 @@ def main():
         print("The file(s) synchronization has been stopped \nHave a good day!")
 
 
-def creationReplicaFolder(PATH_REPLICA, LOG_PATH, slashDirection):
+def creationReplicaFolder(PATH_REPLICA, LOG_PATH):
     try:
         answer = input("The Back Up Folder does not exist. Do you want to create it? [y] for Yes, or [n] for No ")
         # print(answer)
         if answer == "y":
-            NAME_FILE = PATH_REPLICA.split(slashDirection)
-            directory = NAME_FILE[-1]
-            PARENT_DIR = NAME_FILE[0:-1]
-            parent_dir = slashDirection.join(PARENT_DIR)
-            os.chdir(parent_dir)
-            os.mkdir(directory)
-            informationForLog(f"The folder {directory} was created", LOG_PATH)
+            os.makedirs(PATH_REPLICA)
+            # NAME_FILE = PATH_REPLICA.split(slashDirection)
+            # directory = NAME_FILE[-1]
+            # PARENT_DIR = NAME_FILE[0:-1]
+            # parent_dir = slashDirection.join(PARENT_DIR)
+            # os.chdir(parent_dir)
+            # os.mkdir(directory)
+            informationForLog(f"The back-up folder was created", LOG_PATH)
             print("The back up folder was created")
         else:
             print("Sorry we can not continue with the synchronization. Try again")
@@ -121,17 +123,23 @@ def creationReplicaFolder(PATH_REPLICA, LOG_PATH, slashDirection):
         print("Are you sure did you write a file path? Please try again")
         main()
     
-def creatingCopyInReplica(PATH_SOURCE,file_source ,PATH_REPLICA, LOG_PATH, slashDirection):
-    src_path = PATH_SOURCE + slashDirection + file_source
-    dst_path = PATH_REPLICA + slashDirection + "Back_up_" + file_source
+def creatingCopyInReplica(PATH_SOURCE, file_source, PATH_REPLICA, LOG_PATH):#, slashDirection):
+    src_path = os.path.join(PATH_SOURCE, file_source)
+    dst_path = os.path.join(PATH_REPLICA, f"Back_up_{file_source}")
     shutil.copy(src_path, dst_path)
+    # src_path = PATH_SOURCE + slashDirection + file_source
+    # dst_path = PATH_REPLICA + slashDirection + "Back_up_" + file_source
+    # shutil.copy(src_path, dst_path)
     informationForLog(f"Back up File of {file_source} was created on {PATH_REPLICA}", LOG_PATH)
     print(f"Back up File of {file_source} was created on {PATH_REPLICA}")
 
-def creatingUpdatedCopyInReplica(PATH_SOURCE,file_source ,PATH_REPLICA, LOG_PATH, slashDirection):
-    src_path = PATH_SOURCE + slashDirection + file_source
-    dst_path = PATH_REPLICA + slashDirection + "Back_up_" + file_source
+def creatingUpdatedCopyInReplica(PATH_SOURCE, file_source, PATH_REPLICA, LOG_PATH):#, slashDirection):
+    src_path = os.path.join(PATH_SOURCE, file_source)
+    dst_path = os.path.join(PATH_REPLICA, f"Back_up_{file_source}")
     shutil.copy(src_path, dst_path)
+    # src_path = PATH_SOURCE + slashDirection + file_source
+    # dst_path = PATH_REPLICA + slashDirection + "Back_up_" + file_source
+    # shutil.copy(src_path, dst_path)
     informationForLog(f"Back up File of {file_source} was updated on {PATH_REPLICA}", LOG_PATH)
     print(f"Back up File of {file_source} was updated on {PATH_REPLICA}")
     
