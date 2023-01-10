@@ -6,15 +6,6 @@ import platform
 import datetime
 
 def main():
-    
-    # print(platform.system())
-    # slashDirection = ""
-    # if platform.system() == "Linux" or platform.system() == "Darwin":
-    #     slashDirection = "/"
-    # else:
-    #     slashDirection = "\\"
-    
-    # input necesary for the program
     PATH_SOURCE = input("Provide the complete path of your source file: ")
     if (not os.path.isdir(os.path.realpath(PATH_SOURCE))) or PATH_SOURCE=="" :
         print("Please, check that the path is a folder path or that the folder exists. Try again")
@@ -50,20 +41,12 @@ def main():
 
     informationForLog("Synchronization process has begun",LOG_PATH)
     print("If you want to stop the synchronization at any moment press the key combination [ctrl + c]")
-    # isSynchronizing = True
+    
     try:
-        while(True):
-            # print("loop")
-            # k = cv2.waitKey(1) & 0xFF
-            # if k == ord('q'):
-            #     informationForLog("The file(s) synchronization has been stopped",LOG_PATH)
-            #     print("The file(s) synchronization has been stopped")
-            #     isSynchronizing = False
-            #     break
-            
+        while(True): 
             if first_number_files_replica == 0:
                 for file_source in os.listdir(PATH_SOURCE):
-                    creatingCopyInReplica(PATH_SOURCE,file_source ,PATH_REPLICA, LOG_PATH)#, slashDirection)
+                    creatingCopyInReplica(PATH_SOURCE,file_source ,PATH_REPLICA, LOG_PATH)
             else:       
                 for file_source in os.listdir(PATH_SOURCE):
                     name_in_replica= f"Back_up_{file_source}"
@@ -72,9 +55,9 @@ def main():
                         dst_path = os.path.join(PATH_REPLICA, f"Back_up_{file_source}")
                         areSameFiles = comparingFiles(src_path, dst_path)
                         if not areSameFiles:
-                            creatingUpdatedCopyInReplica(PATH_SOURCE,file_source ,PATH_REPLICA, LOG_PATH)#, slashDirection)
+                            creatingUpdatedCopyInReplica(PATH_SOURCE,file_source ,PATH_REPLICA, LOG_PATH)
                     else:
-                        creatingCopyInReplica(PATH_SOURCE,file_source ,PATH_REPLICA, LOG_PATH)#, slashDirection)
+                        creatingCopyInReplica(PATH_SOURCE,file_source ,PATH_REPLICA, LOG_PATH)
                         
             first_number_files_replica = len(os.listdir(PATH_REPLICA))
             first_number_files_source = len(os.listdir(PATH_SOURCE))
@@ -85,17 +68,12 @@ def main():
                 extra_files=["Back_up_"+file for file in file_list_replica if file not in file_list_source]
                 for file in extra_files:
                     extra_files_path = os.path.join(PATH_REPLICA, file)
-                    # extra_files_path = PATH_REPLICA + slashDirection + file
                     os.remove(extra_files_path)
                     original_name = file.replace("Back_up_","")
                     informationForLog(f"File {original_name} was not found in source folder. File {file} was deleted", LOG_PATH)
                     print(f"File {original_name} was not found in source folder. File {file} was deleted")
                     
             time.sleep(SYNCHRO_TIME_SEC)
-            # stop_synch = input("If you want to stop the synchronization, please type the letter [q]")
-            # if stop_synch == "q":
-            #     informationForLog("The file(s) synchronization has been stopped",LOG_PATH)
-            #     isSynchronizing = False
     except KeyboardInterrupt:
         informationForLog("\nThe file(s) synchronization has been stopped",LOG_PATH)
         print("The file(s) synchronization has been stopped \nHave a good day!")
@@ -104,15 +82,8 @@ def main():
 def creationReplicaFolder(PATH_REPLICA, LOG_PATH):
     try:
         answer = input("The Back Up Folder does not exist. Do you want to create it? [y] for Yes, or [n] for No ")
-        # print(answer)
         if answer == "y":
             os.makedirs(PATH_REPLICA)
-            # NAME_FILE = PATH_REPLICA.split(slashDirection)
-            # directory = NAME_FILE[-1]
-            # PARENT_DIR = NAME_FILE[0:-1]
-            # parent_dir = slashDirection.join(PARENT_DIR)
-            # os.chdir(parent_dir)
-            # os.mkdir(directory)
             informationForLog(f"The back-up folder was created", LOG_PATH)
             print("The back up folder was created")
         else:
@@ -123,23 +94,17 @@ def creationReplicaFolder(PATH_REPLICA, LOG_PATH):
         print("Are you sure did you write a file path? Please try again")
         main()
     
-def creatingCopyInReplica(PATH_SOURCE, file_source, PATH_REPLICA, LOG_PATH):#, slashDirection):
+def creatingCopyInReplica(PATH_SOURCE, file_source, PATH_REPLICA, LOG_PATH):
     src_path = os.path.join(PATH_SOURCE, file_source)
     dst_path = os.path.join(PATH_REPLICA, f"Back_up_{file_source}")
     shutil.copy(src_path, dst_path)
-    # src_path = PATH_SOURCE + slashDirection + file_source
-    # dst_path = PATH_REPLICA + slashDirection + "Back_up_" + file_source
-    # shutil.copy(src_path, dst_path)
     informationForLog(f"Back up File of {file_source} was created on {PATH_REPLICA}", LOG_PATH)
     print(f"Back up File of {file_source} was created on {PATH_REPLICA}")
 
-def creatingUpdatedCopyInReplica(PATH_SOURCE, file_source, PATH_REPLICA, LOG_PATH):#, slashDirection):
+def creatingUpdatedCopyInReplica(PATH_SOURCE, file_source, PATH_REPLICA, LOG_PATH):
     src_path = os.path.join(PATH_SOURCE, file_source)
     dst_path = os.path.join(PATH_REPLICA, f"Back_up_{file_source}")
     shutil.copy(src_path, dst_path)
-    # src_path = PATH_SOURCE + slashDirection + file_source
-    # dst_path = PATH_REPLICA + slashDirection + "Back_up_" + file_source
-    # shutil.copy(src_path, dst_path)
     informationForLog(f"Back up File of {file_source} was updated on {PATH_REPLICA}", LOG_PATH)
     print(f"Back up File of {file_source} was updated on {PATH_REPLICA}")
     
@@ -151,7 +116,7 @@ def logCreation(LOG_PATH):
     
 def informationForLog(message, LOG_PATH):
     with open(LOG_PATH, "a") as log:
-        now = datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M:%S') #time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
+        now = datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M:%S')
         log.write(f"{message} on {now}")
         log.write("\n")
     print(f"{message} on {now}")
